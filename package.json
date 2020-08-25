@@ -1,0 +1,24 @@
+{
+  "name": "from-telegram-channel-to-youtube-playlist",
+  "version": "0.0.1",
+  "description": "Automatically adds shared videos to your Youtube playlist in Telegram",
+  "main": "./bin/start.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./bin/start.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shonie/from-telegram-channel-to-youtube-playlist.git"
+  },
+  "keywords": [
+    "telegram",
+    "youtube"
+  ],
+  "author": "shonie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shonie/from-telegram-channel-to-youtube-playlist/issues"
+  },
+  "homepage": "https://github.com/shonie/from-telegram-channel-to-youtube-playlist#readme"
+}
