@@ -1,6 +1,5 @@
 import http from "http";
 
-let hostname = process.env.HOST || "127.0.0.1";
 let port = process.env.PORT || 3000;
 
 let server = http.createServer((req, res) => {
@@ -14,6 +13,6 @@ server.on("error", (err) => {
   console.log("Error happened", err);
 });
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(port, () => {
+  console.log(`Server running at ${port}`);
 });
