@@ -4,10 +4,10 @@ let hostname = process.env.HOST || "127.0.0.1";
 let port = process.env.PORT || 3000;
 
 let server = http.createServer((req, res) => {
-  console.log('Incoming request', req);
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/plain");
   res.end("Hello, world!");
+  console.log('Incoming request', req);
 });
 
 server.on("error", (err) => {
