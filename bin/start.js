@@ -1,21 +1,15 @@
-import http from 'http';
 import createDebug from 'debug';
+import * as server from '../lib/server.js';
+import * as app from '../lib/app.js';
 
-let debug = createDebug('*');
+let debug = createDebug('app:start');
 
-const port = process.env.PORT || 3000;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello, world!');
-  debug('Incoming request', req);
-});
-
-server.on('error', (err) => {
-  debug('Error happened', err);
-});
-
-server.listen(port, () => {
-  debug(`Server running at ${port}`);
-});
+(async () => {
+  try {
+    await app.start();
+    await server.start();
+  } catch (err) {
+    debug('Error on start', err);
+    process.exit(1);
+  }
+})();
