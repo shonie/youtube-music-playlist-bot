@@ -1,18 +1,21 @@
-import http from "http";
+import http from 'http';
+import createDebug from 'debug';
 
-let port = process.env.PORT || 3000;
+let debug = createDebug('*');
 
-let server = http.createServer((req, res) => {
+const port = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
   res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Hello, world!");
-  console.log('Incoming request', req);
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello, world!');
+  debug('Incoming request', req);
 });
 
-server.on("error", (err) => {
-  console.log("Error happened", err);
+server.on('error', (err) => {
+  debug('Error happened', err);
 });
 
 server.listen(port, () => {
-  console.log(`Server running at ${port}`);
+  debug(`Server running at ${port}`);
 });
