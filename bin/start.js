@@ -1,3 +1,9 @@
-import { start } from '../lib/bot.js';
+import createDebug from 'debug';
+import { app } from '../lib/app.js';
+import { PORT } from '../lib/config.js';
 
-start();
+const debug = createDebug('app:start');
+
+app.listen(PORT, () => {
+  debug(`Listening on port ${PORT}!`);
+});
