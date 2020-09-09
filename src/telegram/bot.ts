@@ -26,7 +26,7 @@ bot.catch((err: Error, ctx: Context) => {
   return ctx.reply(`Something went wrong, please try again later`);
 });
 
-bot.command('connect_google', async (ctx) =>
+bot.command('connect_google', async (ctx: Context) =>
   ctx.reply(
     `Please follow the link ${await generateAuthUrl({
       user: ctx.from,
@@ -34,10 +34,17 @@ bot.command('connect_google', async (ctx) =>
   )
 );
 
-bot.command('connect_playlist', async (ctx) => {
+bot.command('connect_playlist', async (ctx: Context) => {
   const chatIds = await getAllChats();
-  const chats = await Promise.all(chatIds.map(async ({ id }) => bot.telegram.getChat(id)));
-  return ctx.reply(`Please select the Telegram chat that you want to sync: ${JSON.stringify(chats)}`);
+  const userId = ctx.from?.id;
+  const chats = await Promise.all(
+    chatIds.map(async ({ id }) => {
+      const [chat, member] = await Promise.all([bot.telegram.getChat(id), bot.telegram.getChatMember(id, userId!)]);
+      return member ? chat : null;
+    })
+  );
+  const chatsThatUserBelongTo = chats.filter(Boolean);
+  return ctx.reply(`Please select the Telegram chat that you want to sync: ${JSON.stringify(chatsThatUserBelongTo)}`);
 });
 
 bot.on('text', async (ctx) => {
@@ -71,3 +78,4 @@ bot.on('channel_post', async (ctx) => {
 });
 
 export { bot };
+
