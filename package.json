@@ -2,12 +2,11 @@
   "name": "from-telegram-channel-to-youtube-playlist",
   "version": "0.0.1",
   "description": "Automatically adds shared videos to your Youtube playlist in Telegram",
-  "main": "./bin/start.js",
-  "type": "module",
   "scripts": {
-    "start": "node --experimental-modules --no-warnings ./bin/start.js",
-    "dev": "dotenv nodemon --experimental-modules ./bin/start.js",
-    "lint": "eslint .",
+    "start": "node ./dist/run.js",
+    "build": "tsc",
+    "dev": "dotenv nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' --files src/run.ts",
+    "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix"
   },
   "engines": {
@@ -28,13 +27,21 @@
   },
   "homepage": "https://github.com/shonie/from-telegram-channel-to-youtube-playlist#readme",
   "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/express": "^4.17.8",
+    "@types/mongoose": "^5.7.36",
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
     "dotenv-cli": "^3.2.0",
-    "eslint": "^7.7.0",
+    "eslint": "^7.8.1",
+    "eslint-config-airbnb-typescript": "^10.0.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
     "nodemon": "^2.0.4",
-    "prettier": "^2.1.0"
+    "prettier": "^2.1.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.2"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -46,6 +53,7 @@
     "lodash": "^4.17.20",
     "mongoose": "^5.10.3",
     "node-fetch": "^2.6.0",
-    "telegraf": "^3.38.0"
+    "telegraf": "^3.38.0",
+    "telegraf-inline-menu": "^5.1.0"
   }
 }

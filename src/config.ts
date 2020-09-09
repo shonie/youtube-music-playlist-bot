@@ -14,7 +14,7 @@ export const APP_WEBHOOK_ENDPOINT = `https://telegram-channel-to-youtube.herokua
 
 export const TELEGRAM_UPDATES_GATEWAY = `/${TELEGRAM_BOT_API_KEY}`;
 
-export const PORT = process.env.PORT || 3000;
+export const PORT = process.env.PORT || '3000';
 
 export const HOST = '0.0.0.0';
 

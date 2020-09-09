@@ -1,16 +1,12 @@
-import Telegraf from 'telegraf';
-import session from 'telegraf/session.js';
+import Telegraf, { Context } from 'telegraf';
 import createDebug from 'debug';
-import _ from 'lodash';
-import { TELEGRAM_BOT_API_KEY, APP_WEBHOOK_ENDPOINT, TELEGRAM_BOT_USERNAME } from '../config.js';
-import { generateAuthUrl } from '../google/youtube.js';
-import { saveChat, deleteChatById, getAllChats } from '../models/Chat.js';
+import { TELEGRAM_BOT_API_KEY, APP_WEBHOOK_ENDPOINT, TELEGRAM_BOT_USERNAME } from '../config';
+import { generateAuthUrl } from '../google/youtube';
+import { saveChat, deleteChatById, getAllChats } from '../models/Chat';
 
 const debug = createDebug('app:bot');
 
-const bot = new Telegraf(TELEGRAM_BOT_API_KEY);
-
-bot.use(session());
+const bot = new Telegraf(TELEGRAM_BOT_API_KEY!);
 
 bot.telegram.setWebhook(APP_WEBHOOK_ENDPOINT);
 
@@ -25,7 +21,7 @@ bot.telegram.setMyCommands([
   },
 ]);
 
-bot.catch((err, ctx) => {
+bot.catch((err: Error, ctx: Context) => {
   debug(`Ooops, encountered an error for ${ctx.updateType}`, err);
   return ctx.reply(`Something went wrong, please try again later`);
 });
@@ -39,7 +35,6 @@ bot.command('connect_google', async (ctx) =>
 );
 
 bot.command('connect_playlist', async (ctx) => {
-  ctx.session.connect_playlist = true;
   const chatIds = await getAllChats();
   const chats = await Promise.all(chatIds.map(async ({ id }) => bot.telegram.getChat(id)));
   return ctx.reply(`Please select the Telegram chat that you want to sync: ${JSON.stringify(chats)}`);
@@ -47,37 +42,31 @@ bot.command('connect_playlist', async (ctx) => {
 
 bot.on('text', async (ctx) => {
   createDebug('app:bot:text')(ctx.message);
-  if (ctx.session.connect_playlist) {
-    console.log(ctx.message);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((ctx as any).session.connect_playlist) {
+    debug(ctx.message);
   }
 });
 
-const updateTypes = ['text', 'audio', 'video'];
-
-updateTypes.forEach((type) => {
-  bot.on(type, async (ctx) => {
-    createDebug(`app:bot:${type}`)(ctx.message);
-  });
-});
-
 bot.on('new_chat_members', async (ctx) => {
-  if (ctx.message.new_chat_member.username === TELEGRAM_BOT_USERNAME) {
+  const members = ctx.message?.new_chat_members;
+  if (members?.find((m) => m.username === TELEGRAM_BOT_USERNAME)) {
     await saveChat({
-      id: ctx.message.chat.id,
+      id: ctx.message?.chat.id!,
     });
   }
 });
 
 bot.on('left_chat_member', async (ctx) => {
-  if (ctx.message.left_chat_member.username === TELEGRAM_BOT_USERNAME) {
-    await deleteChatById(ctx.message.chat.id);
+  if (ctx.message?.left_chat_member?.username === TELEGRAM_BOT_USERNAME) {
+    await deleteChatById(ctx.message?.chat.id!);
   }
 });
 
 bot.on('channel_post', async (ctx) => {
   const channelPost = ctx.update.channel_post;
   await saveChat({
-    id: channelPost.chat.id,
+    id: channelPost?.chat.id!,
   });
 });
 

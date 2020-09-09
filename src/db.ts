@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 import createDebug from 'debug';
-import { MONGO_URI } from './config.js';
+import { MONGO_URI } from './config';
 
 const debug = createDebug('app:db');
 
 export function connect() {
   return new Promise((resolve, reject) => {
-    mongoose.connect(MONGO_URI, {
+    mongoose.connect(MONGO_URI!, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 
 const chatSchema = new mongoose.Schema({
   id: Number,
@@ -7,7 +7,7 @@ const chatSchema = new mongoose.Schema({
 
 const Chat = mongoose.model('Chat', chatSchema);
 
-export async function saveChat({ id }) {
+export async function saveChat({ id }: { id: number }) {
   await Chat.findOneAndUpdate(
     { _id: id },
     {
@@ -19,7 +19,7 @@ export async function saveChat({ id }) {
   );
 }
 
-export async function deleteChatById(id) {
+export async function deleteChatById(id: number) {
   await Chat.deleteOne({ _id: id });
 }
 

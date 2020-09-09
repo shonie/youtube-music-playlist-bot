@@ -1,4 +1,4 @@
-import googleapis from 'googleapis';
+import googleapis, { GoogleApis } from 'googleapis';
 import auth from 'google-auth-library';
 import getVideoId from 'get-video-id';
 import createDebug from 'debug';
@@ -6,7 +6,7 @@ import { GOOGLE_CLIENT_SECRET, GOOGLE_CLIENT_ID, YOUTUBE_PLAYLIST_ID } from '../
 
 const debug = createDebug('app:youtube');
 
-export async function getPlaylistItems() {
+export async function getPlaylistItems(youtube: GoogleApis) {
   const {
     data: { items },
   } = await youtube.playlistItems.list({
@@ -16,10 +16,23 @@ export async function getPlaylistItems() {
   return items;
 }
 
-export async function insertItemsToPlaylist(code) {
+async function getAuthenticatedClient(code: string) {
+  try {
+    const client = new auth.OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
+    const { tokens } = await client.getToken(code);
+    client.setCredentials(tokens);
+    return client;
+  } catch (err) {
+    debug('Error on get access token', err);
+    throw err;
+  }
+}
+
+export async function insertItemsToPlaylist(code: string) {
   const links = ['https://www.youtube.com/watch?v=ajuz6u-nADY&list=RDajuz6u-nADY&start_radio=1'];
   const client = await getAuthenticatedClient(code);
-  const youtube = new googleapis.google.youtube({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const youtube = new (googleapis.google.youtube as any)({
     version: 'v3',
     auth: client,
   });
@@ -41,7 +54,7 @@ export async function insertItemsToPlaylist(code) {
               },
             },
           });
-          console.log('Res', res);
+          debug('Res', res);
         } catch (err) {
           debug('Error on playlist insert', err);
         }
@@ -50,19 +63,7 @@ export async function insertItemsToPlaylist(code) {
   );
 }
 
-async function getAuthenticatedClient(code) {
-  try {
-    const client = new auth.OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
-    const { tokens } = await client.getToken(code);
-    client.setCredentials(tokens);
-    return client;
-  } catch (err) {
-    debug('Error on get access token', err);
-    throw err;
-  }
-}
-
-export async function generateAuthUrl(state) {
+export async function generateAuthUrl(state: object) {
   const scope = [
     'https://www.googleapis.com/auth/youtube',
     'https://www.googleapis.com/auth/youtube.force-ssl',

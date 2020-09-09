@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { Credentials } from 'google-auth-library';
 
 const googleAccessTokenSchema = new mongoose.Schema({
   scope: String,
@@ -11,7 +12,7 @@ const googleAccessTokenSchema = new mongoose.Schema({
 
 const GoogleAccessToken = mongoose.model('GoogleAccessToken', googleAccessTokenSchema);
 
-export async function saveGoogleAccessToken(id, token) {
+export async function saveGoogleAccessToken(id: string, token: Credentials) {
   await GoogleAccessToken.findOneAndUpdate(
     { _id: id },
     { ...token, id },
