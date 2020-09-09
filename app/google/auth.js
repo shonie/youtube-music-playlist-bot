@@ -1,10 +1,10 @@
 import auth from 'google-auth-library';
 import createDebug from 'debug';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from './config.js';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '../config.js';
 
 const debug = createDebug('app:auth');
 
-export async function getTokens(code) {
+export async function getAccessToken(code) {
   const client = new auth.OAuth2Client(
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,

@@ -2,7 +2,7 @@ import googleapis from 'googleapis';
 import auth from 'google-auth-library';
 import getVideoId from 'get-video-id';
 import createDebug from 'debug';
-import { GOOGLE_CLIENT_SECRET, GOOGLE_CLIENT_ID, YOUTUBE_PLAYLIST_ID } from './config.js';
+import { GOOGLE_CLIENT_SECRET, GOOGLE_CLIENT_ID, YOUTUBE_PLAYLIST_ID } from '../config.js';
 
 const debug = createDebug('app:youtube');
 

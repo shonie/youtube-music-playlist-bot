@@ -1,9 +1,11 @@
 import createDebug from 'debug';
-import { app } from '../lib/app.js';
-import { PORT } from '../lib/config.js';
+import { connect } from '../app/db.js';
+import { listen } from '../app/app.js';
+import { PORT } from '../app/config.js';
 
 const debug = createDebug('app:start');
 
-app.listen(PORT, () => {
-  debug(`Listening on port ${PORT}!`);
-});
+(async () => {
+  await connect();
+  await listen(PORT);
+})();

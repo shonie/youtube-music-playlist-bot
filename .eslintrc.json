@@ -5,7 +5,7 @@
   },
   "parserOptions": {
     "sourceType": "module",
-    "ecmaVersion": 8
+    "ecmaVersion": 9
   },
   "extends": ["plugin:prettier/recommended"],
   "plugins": ["prettier"],
