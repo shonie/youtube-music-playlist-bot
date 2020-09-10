@@ -4,7 +4,7 @@
   "description": "Automatically adds shared videos to your Youtube playlist in Telegram",
   "scripts": {
     "start": "node ./dist/run.js",
-    "prebuild": "ls -la ./src/typings && rimraf ./dist",
+    "prebuild": "rimraf ./dist",
     "build": "tsc",
     "dev": "dotenv nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'ts-node' --files src/run.ts",
     "lint": "eslint ./src",
