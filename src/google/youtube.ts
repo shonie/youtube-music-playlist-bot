@@ -1,3 +1,4 @@
+/// <reference path="../typings/global.d.ts" />
 import googleapis, { GoogleApis } from 'googleapis';
 import auth from 'google-auth-library';
 import getVideoId from 'get-video-id';

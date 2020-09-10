@@ -78,4 +78,3 @@ bot.on('channel_post', async (ctx) => {
 });
 
 export { bot };
-
