@@ -11,7 +11,7 @@ const debug = createDebug('app:express');
 
 app.use(bot.webhookCallback(`/${TELEGRAM_BOT_API_KEY}`));
 
-app.use((err: Error, _: Request, res: Response) => {
+app.use((err: Error, _: Request, res: Response, __: NextFunction) => {
   debug(err.stack);
   res.status(500).send(`Something went wrong! ${err}`);
 });

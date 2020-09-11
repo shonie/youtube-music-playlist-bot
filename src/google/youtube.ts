@@ -1,6 +1,5 @@
-/// <reference path="../typings/global.d.ts" />
-import googleapis, { GoogleApis } from 'googleapis';
-import auth from 'google-auth-library';
+import { google, GoogleApis } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 import getVideoId from 'get-video-id';
 import createDebug from 'debug';
 import { GOOGLE_CLIENT_SECRET, GOOGLE_CLIENT_ID, YOUTUBE_PLAYLIST_ID } from '../config.js';
@@ -19,7 +18,7 @@ export async function getPlaylistItems(youtube: GoogleApis) {
 
 async function getAuthenticatedClient(code: string) {
   try {
-    const client = new auth.OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
     const { tokens } = await client.getToken(code);
     client.setCredentials(tokens);
     return client;
@@ -33,7 +32,7 @@ export async function insertItemsToPlaylist(code: string) {
   const links = ['https://www.youtube.com/watch?v=ajuz6u-nADY&list=RDajuz6u-nADY&start_radio=1'];
   const client = await getAuthenticatedClient(code);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const youtube = new (googleapis.google.youtube as any)({
+  const youtube = new (google.youtube as any)({
     version: 'v3',
     auth: client,
   });
@@ -73,7 +72,7 @@ export async function generateAuthUrl(state: object) {
     'https://www.googleapis.com/auth/youtube.upload',
   ];
   try {
-    const client = new auth.OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
     return await client.generateAuthUrl({
       scope,
       access_type: 'offline',

@@ -18,6 +18,7 @@ export async function saveGoogleAccessToken(id: string, token: Credentials) {
     { ...token, id },
     {
       upsert: true,
+      useFindAndModify: true,
     }
   );
 }
