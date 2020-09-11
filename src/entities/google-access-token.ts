@@ -6,8 +6,8 @@ const googleAccessTokenSchema = new mongoose.Schema({
   access_token: String,
   token_type: String,
   expiry_date: Number,
-  id: String,
-  _id: String,
+  id: Number,
+  _id: Number,
 });
 
 const GoogleAccessToken = mongoose.model('GoogleAccessToken', googleAccessTokenSchema);
@@ -21,4 +21,8 @@ export async function saveGoogleAccessToken(id: string, token: Credentials) {
       useFindAndModify: true,
     }
   );
+}
+
+export async function getByUserId(id: number) {
+  return GoogleAccessToken.findById(id).exec();
 }

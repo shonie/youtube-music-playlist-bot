@@ -3,7 +3,7 @@ import createDebug from 'debug';
 import { bot } from './telegram/bot';
 import { TELEGRAM_BOT_API_KEY } from './config';
 import { getAccessToken } from './google/auth';
-import { saveGoogleAccessToken } from './models/GoogleAccessToken';
+import { saveGoogleAccessToken } from './entities/google-access-token';
 
 const app = express();
 

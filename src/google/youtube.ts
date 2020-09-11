@@ -1,10 +1,12 @@
-import { google, GoogleApis } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
+import { GoogleApis } from 'googleapis';
+import { Credentials } from 'google-auth-library';
 import getVideoId from 'get-video-id';
 import createDebug from 'debug';
-import { GOOGLE_CLIENT_SECRET, GOOGLE_CLIENT_ID, YOUTUBE_PLAYLIST_ID } from '../config.js';
+import { YOUTUBE_PLAYLIST_ID } from '../config.js';
+import { getAuthenticatedYoutube } from './auth';
+import { Playlist } from '../types';
 
-const debug = createDebug('app:youtube');
+const debug = createDebug('app:google:youtube');
 
 export async function getPlaylistItems(youtube: GoogleApis) {
   const {
@@ -16,26 +18,19 @@ export async function getPlaylistItems(youtube: GoogleApis) {
   return items;
 }
 
-async function getAuthenticatedClient(code: string) {
-  try {
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
-    const { tokens } = await client.getToken(code);
-    client.setCredentials(tokens);
-    return client;
-  } catch (err) {
-    debug('Error on get access token', err);
-    throw err;
-  }
+export async function getPlaylists(credentials: Credentials): Promise<Playlist[]> {
+  const {
+    data: { items },
+  } = await getAuthenticatedYoutube(credentials).playlists.list({
+    mine: true,
+    part: 'id,snippet',
+  });
+  return items;
 }
 
-export async function insertItemsToPlaylist(code: string) {
+export async function insertItemsToPlaylist() {
   const links = ['https://www.youtube.com/watch?v=ajuz6u-nADY&list=RDajuz6u-nADY&start_radio=1'];
-  const client = await getAuthenticatedClient(code);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const youtube = new (google.youtube as any)({
-    version: 'v3',
-    auth: client,
-  });
+  const youtube = getAuthenticatedYoutube({});
   await Promise.all(
     links.map(async (link) => {
       const info = getVideoId(link);
@@ -61,27 +56,4 @@ export async function insertItemsToPlaylist(code: string) {
       }
     })
   );
-}
-
-export async function generateAuthUrl(state: object) {
-  const scope = [
-    'https://www.googleapis.com/auth/youtube',
-    'https://www.googleapis.com/auth/youtube.force-ssl',
-    'https://www.googleapis.com/auth/youtubepartner',
-    'https://www.googleapis.com/auth/youtube.readonly',
-    'https://www.googleapis.com/auth/youtube.upload',
-  ];
-  try {
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
-    return await client.generateAuthUrl({
-      scope,
-      access_type: 'offline',
-      client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: 'https://telegram-channel-to-youtube.herokuapp.com/auth/google',
-      state: JSON.stringify(state),
-    });
-  } catch (err) {
-    debug('Error on get access token', err);
-    throw err;
-  }
 }

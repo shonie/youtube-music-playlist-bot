@@ -3,11 +3,13 @@ import session from 'telegraf/session';
 import createDebug from 'debug';
 import { TELEGRAM_BOT_API_KEY, APP_WEBHOOK_ENDPOINT, TELEGRAM_BOT_USERNAME } from '../config';
 import { TelegrafContext } from '../types';
-import { saveChat, deleteChatById } from '../models/Chat';
+import { saveChat, deleteChatById } from '../entities/chat';
 import { menu } from './menu';
 
 const debug = createDebug('app:bot');
+
 const bot = new Telegraf<TelegrafContext>(TELEGRAM_BOT_API_KEY!);
+
 bot.use(
   session({
     getSessionKey: (ctx: TelegrafContext) => {

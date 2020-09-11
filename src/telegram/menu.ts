@@ -1,22 +1,28 @@
 import { MenuTemplate, MenuMiddleware } from 'telegraf-inline-menu';
-import { generateAuthUrl } from '../google/youtube';
-import { TelegrafContext } from '../types';
+import { Credentials } from 'google-auth-library';
+import { generateAuthUrl } from '../google/auth';
+import { TelegrafContext, Playlist } from '../types';
 import { getUserChats } from './api';
+import { getByUserId } from '../entities/google-access-token';
+import { getPlaylists } from '../google/youtube';
+import { chunk } from '../util';
 
-const menuTemplate = new MenuTemplate<TelegrafContext>((ctx: TelegrafContext) => `Hey ${ctx.from!.first_name}!`);
+const mainMenu = new MenuTemplate<TelegrafContext>((ctx: TelegrafContext) => `Hey ${ctx.from!.first_name}!`);
 
-menuTemplate.url('Connect my Youtube account', (ctx) =>
+const channelsMenu = new MenuTemplate<TelegrafContext>(
+  () => `Please select at least one channel that you wish to sync with playlists`
+);
+
+const playlistsMenu = new MenuTemplate<TelegrafContext>(() => `Please select Youtube playlist you wish to sync`);
+
+mainMenu.url('Connect my Youtube account', (ctx) =>
   generateAuthUrl({
     user: ctx.from,
   })
 );
 
-const submenuTemplate = new MenuTemplate<TelegrafContext>(
-  () => `Please select the channels that you wish to sync with playlists`
-);
-
-submenuTemplate.select(
-  'select_playlist',
+channelsMenu.select(
+  'select_channels',
   async (ctx: TelegrafContext) => {
     const userChats = await getUserChats(ctx.from!.id);
     return userChats.map((chat) => chat.title) as string[];
@@ -33,6 +39,31 @@ submenuTemplate.select(
   }
 );
 
-menuTemplate.submenu('Sync my playlists', 'sync_playlists', submenuTemplate);
+playlistsMenu.select(
+  'select_playlist',
+  async (ctx: TelegrafContext) => {
+    const googleCredentials = await getByUserId(ctx.from!.id);
+    const playlists = await getPlaylists(googleCredentials as Credentials);
+    return playlists.map((p: Playlist) => chunk(p.snippet.title, 64));
+  },
+  {
+    isSet: (ctx: TelegrafContext, key: string) => ctx.session.playlist === key,
+    set: (ctx: TelegrafContext, key: string) => {
+      ctx.session.playlist = key;
+      return true;
+    },
+  }
+);
 
-export const menu = new MenuMiddleware('/', menuTemplate);
+playlistsMenu.interact('Sync', 'complete_sync', {
+  do: async (ctx: TelegrafContext) => {
+    console.log(ctx.session);
+    return true;
+  },
+});
+
+mainMenu.submenu('Sync my playlist', 'sync_playlists', channelsMenu);
+
+channelsMenu.submenu('Select Youtube playlist', 'select_playlist', playlistsMenu);
+
+export const menu = new MenuMiddleware('/', mainMenu);

@@ -1,7 +1,7 @@
 import { Telegram } from 'telegraf';
 import { Chat } from 'telegram-typings';
 import { TELEGRAM_BOT_API_KEY } from '../config';
-import { getAllChats } from '../models/Chat';
+import { getAllChats } from '../entities/chat';
 
 const telegram = new Telegram(TELEGRAM_BOT_API_KEY!);
 
