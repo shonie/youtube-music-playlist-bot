@@ -47,7 +47,7 @@ channelsMenu.select(
   async (ctx: TelegrafContext) => {
     const userChats = await getUserChats(ctx.from!.id);
     ctx.session.userChats = userChats;
-    return userChats.map((chat) => chat.title) as string[];
+    return userChats.map((chat) => chunk(chat.title!, 64)) as string[];
   },
   {
     isSet: async (ctx: TelegrafContext, key: string) => {
@@ -64,7 +64,7 @@ channelsMenu.select(
     set: async (ctx: TelegrafContext, key: string, selected: boolean) => {
       const userId: number = ctx.from!.id;
       const playlistId: string = ctx.session.selectedPlaylistId;
-      const chatId: number = ctx.session.userChats.find((c) => c.title === key)?.id!;
+      const chatId: number = ctx.session.userChats.find((c) => chunk(c.title!, 64) === key)?.id!;
       if (!playlistId) {
         await ctx.reply('Please go back and select at least one playlist');
         return true;
