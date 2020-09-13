@@ -72,7 +72,7 @@ bot.on('channel_post', async (ctx) => {
 });
 bot.catch((err: Error, ctx: TelegrafContext) => {
   debug(`Ooops, encountered an error for ${ctx.updateType}`, err);
-  return ctx.reply(`Something went wrong, please try again later`);
+  return ctx.reply(`Something went wrong, please try again later. Debug: ${err}`);
 });
 
 export { bot };
