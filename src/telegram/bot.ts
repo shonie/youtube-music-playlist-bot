@@ -5,6 +5,9 @@ import { TELEGRAM_BOT_API_KEY, APP_WEBHOOK_ENDPOINT, TELEGRAM_BOT_USERNAME } fro
 import { TelegrafContext } from '../types';
 import { saveChat, deleteChatById } from '../entities/chat';
 import { menu } from './menu';
+import { getSyncedPlaylistsByChatId, SyncedPlaylistInterface } from '../entities/synced-playlist';
+import { getByUserId } from '../entities/google-access-token';
+import { insertItemsToPlaylist } from '../google/youtube';
 
 const debug = createDebug('app:bot');
 
@@ -47,9 +50,22 @@ bot.on('left_chat_member', async (ctx) => {
 });
 bot.on('channel_post', async (ctx) => {
   const channelPost = ctx.update.channel_post;
+  console.log('channelPost', channelPost);
+  const chatId = channelPost?.chat.id!;
   await saveChat({
-    id: channelPost?.chat.id!,
+    id: chatId,
   });
+  const syncedPlaylists = await getSyncedPlaylistsByChatId(chatId);
+  await Promise.all(
+    syncedPlaylists.map(async (syncedPlaylist: SyncedPlaylistInterface) => {
+      const accessToken = await getByUserId(syncedPlaylist.userId!);
+      if (accessToken) {
+        await insertItemsToPlaylist(accessToken, syncedPlaylist.playlistId, [
+          'https://www.youtube.com/watch?v=ajuz6u-nADY&list=RDajuz6u-nADY&start_radio=1',
+        ]);
+      }
+    })
+  );
 });
 bot.catch((err: Error, ctx: TelegrafContext) => {
   debug(`Ooops, encountered an error for ${ctx.updateType}`, err);

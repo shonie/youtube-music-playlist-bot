@@ -23,6 +23,7 @@ export async function saveGoogleAccessToken(id: string, token: Credentials) {
   );
 }
 
-export async function getByUserId(id: number) {
-  return GoogleAccessToken.findById(id).exec();
+export async function getByUserId(id: number): Promise<Credentials> {
+  const creds: Credentials = GoogleAccessToken.findById(id).exec() as Credentials;
+  return creds;
 }

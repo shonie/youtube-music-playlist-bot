@@ -1,19 +1,17 @@
-import { GoogleApis } from 'googleapis';
 import { Credentials } from 'google-auth-library';
 import getVideoId from 'get-video-id';
 import createDebug from 'debug';
-import { YOUTUBE_PLAYLIST_ID } from '../config.js';
 import { getAuthenticatedYoutube } from './auth';
 import { Playlist } from '../types';
 
 const debug = createDebug('app:google:youtube');
 
-export async function getPlaylistItems(youtube: GoogleApis) {
+export async function getPlaylistItems(credentials: Credentials, playlistId: string) {
   const {
     data: { items },
-  } = await youtube.playlistItems.list({
+  } = await getAuthenticatedYoutube(credentials).playlistItems.list({
     part: 'id,snippet',
-    playlistId: YOUTUBE_PLAYLIST_ID,
+    playlistId,
   });
   return items;
 }
@@ -28,9 +26,8 @@ export async function getPlaylists(credentials: Credentials): Promise<Playlist[]
   return items;
 }
 
-export async function insertItemsToPlaylist() {
-  const links = ['https://www.youtube.com/watch?v=ajuz6u-nADY&list=RDajuz6u-nADY&start_radio=1'];
-  const youtube = getAuthenticatedYoutube({});
+export async function insertItemsToPlaylist(credentials: Credentials, playlistId: string, links: string[]) {
+  const youtube = getAuthenticatedYoutube(credentials);
   await Promise.all(
     links.map(async (link) => {
       const info = getVideoId(link);
@@ -41,7 +38,7 @@ export async function insertItemsToPlaylist() {
             requestBody: {
               id: info.id,
               snippet: {
-                playlistId: YOUTUBE_PLAYLIST_ID,
+                playlistId,
                 resourceId: {
                   kind: 'youtube#video',
                   videoId: info.id,

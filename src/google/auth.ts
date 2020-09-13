@@ -13,6 +13,7 @@ export async function getAccessToken(code: string): Promise<Credentials> {
   );
   try {
     const { tokens } = await client.getToken(code);
+    console.log('TOKENS ARE', tokens);
     return tokens;
   } catch (err) {
     debug(`Couldn't get tokens, ${err}`);
