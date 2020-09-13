@@ -6,7 +6,6 @@ import { Playlist } from './playlist';
 export interface TelegrafContext extends Context {
   session: {
     channels: Dictionary<boolean>;
-    selectedPlaylist: string;
     selectedPlaylistId: string;
     allPlaylists: Playlist[];
     userChats: Chat[];

@@ -1,14 +1,16 @@
 import { MenuTemplate, MenuMiddleware, createBackMainMenuButtons } from 'telegraf-inline-menu';
 import { Credentials } from 'google-auth-library';
+import { truncate } from 'lodash';
 import { generateAuthUrl } from '../google/auth';
 import { TelegrafContext, Playlist } from '../types';
 import { getUserChats } from './api';
 import { getByUserId } from '../entities/google-access-token';
 import { getPlaylists } from '../google/youtube';
-import { chunk } from '../util';
 import { saveSyncedPlaylist, getSyncedPlaylist, deleteSyncedPlaylist } from '../entities/synced-playlist';
 
 const mainMenu = new MenuTemplate<TelegrafContext>((ctx: TelegrafContext) => `Hey ${ctx.from!.first_name}!`);
+
+const selectButtonTitle = (title: string, selected: boolean) => `${selected ? '✅ ' : ''}${title}`;
 
 const channelsMenu = new MenuTemplate<TelegrafContext>(
   () => `Please select at least one channel that you wish to sync with this playlist`
@@ -28,14 +30,20 @@ playlistsMenu.select(
     const googleCredentials = await getByUserId(ctx.from!.id);
     const playlists = await getPlaylists(googleCredentials as Credentials);
     ctx.session.allPlaylists = playlists;
-    return playlists.map((p: Playlist) => chunk(p.snippet.title, 64));
+    return playlists.map((p: Playlist) => p.id);
   },
   {
-    isSet: (ctx: TelegrafContext, key: string) => ctx.session.selectedPlaylist === key,
+    isSet: (ctx: TelegrafContext, key: string) => ctx.session.selectedPlaylistId === key,
     set: (ctx: TelegrafContext, key: string) => {
-      ctx.session.selectedPlaylist = key;
-      ctx.session.selectedPlaylistId = ctx.session.allPlaylists.find((p) => chunk(p.snippet.title, 64) === key)?.id!;
+      ctx.session.selectedPlaylistId = key;
       return true;
+    },
+    formatState: (ctx: TelegrafContext, _: string, selected: boolean, key: string) => {
+      const playlist = ctx.session.allPlaylists.find((p) => p.id === key);
+      const title = truncate(playlist!.snippet.title, {
+        length: 10,
+      });
+      return selectButtonTitle(title, selected);
     },
   }
 );
@@ -83,7 +91,10 @@ channelsMenu.select(
     },
     formatState: (ctx: TelegrafContext, _: string, selected: boolean, key: string) => {
       const chat = ctx.session.userChats.find((c) => c.id === parseInt(key, 10));
-      return `${selected ? '✅ ' : ''}${chat?.title}`;
+      const title = truncate(chat?.title!, {
+        length: 10,
+      });
+      return selectButtonTitle(title, selected);
     },
   }
 );
