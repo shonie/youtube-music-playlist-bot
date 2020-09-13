@@ -1,19 +1,15 @@
 import { OAuth2Client, Credentials } from 'google-auth-library';
 import { google, GoogleApis } from 'googleapis';
 import createDebug from 'debug';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '../config.js';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, REDIRECT_URI } from '../config.js';
+import { updateToken } from '../entities/google-access-token';
 
 const debug = createDebug('app:google:auth');
 
 export async function getAccessToken(code: string): Promise<Credentials> {
-  const client = new OAuth2Client(
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    'https://telegram-channel-to-youtube.herokuapp.com/auth/google'
-  );
+  const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, REDIRECT_URI);
   try {
     const { tokens } = await client.getToken(code);
-    console.log('TOKENS ARE', tokens);
     return tokens;
   } catch (err) {
     debug(`Couldn't get tokens, ${err}`);
@@ -30,13 +26,14 @@ export async function generateAuthUrl(state: object) {
     'https://www.googleapis.com/auth/youtube.upload',
   ];
   try {
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, REDIRECT_URI);
     return await client.generateAuthUrl({
       scope,
       access_type: 'offline',
       client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: 'https://telegram-channel-to-youtube.herokuapp.com/auth/google',
+      redirect_uri: REDIRECT_URI,
       state: JSON.stringify(state),
+      prompt: 'consent',
     });
   } catch (err) {
     debug('Error on get access token', err);
@@ -44,10 +41,18 @@ export async function generateAuthUrl(state: object) {
   }
 }
 
-export function getAuthenticatedClient(credentials: Credentials) {
+export function getAuthenticatedClient(credentials: Credentials): OAuth2Client {
   try {
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, 'postmessage');
+    const client = new OAuth2Client({
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      redirectUri: REDIRECT_URI,
+      forceRefreshOnFailure: true,
+    });
     client.setCredentials(credentials);
+    client.on('tokens', async (tokens) => {
+      await updateToken(credentials.access_token!, tokens);
+    });
     return client;
   } catch (err) {
     debug('Error on get access token', err);

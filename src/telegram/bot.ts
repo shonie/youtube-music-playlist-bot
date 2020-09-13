@@ -1,5 +1,6 @@
 import Telegraf from 'telegraf';
 import session from 'telegraf/session';
+import { Message } from 'telegram-typings';
 import createDebug from 'debug';
 import { TELEGRAM_BOT_API_KEY, APP_WEBHOOK_ENDPOINT, TELEGRAM_BOT_USERNAME } from '../config';
 import { TelegrafContext } from '../types';
@@ -8,6 +9,7 @@ import { menu } from './menu';
 import { getSyncedPlaylistsByChatId, SyncedPlaylistInterface } from '../entities/synced-playlist';
 import { getByUserId } from '../entities/google-access-token';
 import { insertItemsToPlaylist } from '../google/youtube';
+import { getYoutubeLinksFromMessage } from './api';
 
 const debug = createDebug('app:bot');
 
@@ -49,20 +51,21 @@ bot.on('left_chat_member', async (ctx) => {
   }
 });
 bot.on('channel_post', async (ctx) => {
-  const channelPost = ctx.update.channel_post;
-  console.log('channelPost', channelPost);
+  const channelPost = ctx.update.channel_post!;
   const chatId = channelPost?.chat.id!;
   await saveChat({
     id: chatId,
   });
+  const youtubeLinks = getYoutubeLinksFromMessage(channelPost as Message);
+  if (!youtubeLinks.length) {
+    return;
+  }
   const syncedPlaylists = await getSyncedPlaylistsByChatId(chatId);
   await Promise.all(
     syncedPlaylists.map(async (syncedPlaylist: SyncedPlaylistInterface) => {
-      const accessToken = await getByUserId(syncedPlaylist.userId!);
-      if (accessToken) {
-        await insertItemsToPlaylist(accessToken, syncedPlaylist.playlistId, [
-          'https://www.youtube.com/watch?v=ajuz6u-nADY&list=RDajuz6u-nADY&start_radio=1',
-        ]);
+      const credentials = await getByUserId(syncedPlaylist.userId!);
+      if (credentials) {
+        await insertItemsToPlaylist(credentials, syncedPlaylist.playlistId, youtubeLinks);
       }
     })
   );

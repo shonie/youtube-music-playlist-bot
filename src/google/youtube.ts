@@ -33,7 +33,7 @@ export async function insertItemsToPlaylist(credentials: Credentials, playlistId
       const info = getVideoId(link);
       if (info && info.id && info.service === 'youtube') {
         try {
-          const res = await youtube.playlistItems.insert({
+          await youtube.playlistItems.insert({
             part: 'id,snippet',
             requestBody: {
               id: info.id,
@@ -46,11 +46,14 @@ export async function insertItemsToPlaylist(credentials: Credentials, playlistId
               },
             },
           });
-          debug('Res', res);
         } catch (err) {
           debug('Error on playlist insert', err);
         }
       }
     })
   );
+}
+
+export function isYoutubeLink(link: string) {
+  return !!getVideoId(link);
 }
