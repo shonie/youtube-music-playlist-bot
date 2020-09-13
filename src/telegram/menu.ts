@@ -10,7 +10,7 @@ import { saveSyncedPlaylist, getSyncedPlaylist, deleteSyncedPlaylist } from '../
 
 const mainMenu = new MenuTemplate<TelegrafContext>((ctx: TelegrafContext) => `Hey ${ctx.from!.first_name}!`);
 
-const selectButtonTitle = (title: string, selected: boolean) => `${selected ? '✅ ' : ''}${title}`;
+const selectButtonTitle = (title: string, selected: boolean) => `${selected ? 'Remove ' : 'Add '}${title}`;
 
 const channelsMenu = new MenuTemplate<TelegrafContext>(
   () => `Please select at least one channel that you wish to sync with this playlist`
@@ -24,26 +24,28 @@ mainMenu.url('Connect my Youtube account', (ctx) =>
   })
 );
 
+const formatTitle = (title: string) =>
+  truncate(title, {
+    length: 10,
+  });
+
 playlistsMenu.select(
   'select_playlist',
   async (ctx: TelegrafContext) => {
     const googleCredentials = await getByUserId(ctx.from!.id);
     const playlists = await getPlaylists(googleCredentials as Credentials);
     ctx.session.allPlaylists = playlists;
-    return playlists.map((p: Playlist) => p.id);
+    return playlists.map((p: Playlist) => formatTitle(p.snippet.title));
   },
   {
-    isSet: (ctx: TelegrafContext, key: string) => ctx.session.selectedPlaylistId === key,
+    isSet: (ctx: TelegrafContext, key: string) =>
+      ctx.session.selectedPlaylistId ===
+      ctx.session.allPlaylists.find((p: Playlist) => formatTitle(p.snippet.title) === key)?.id!,
     set: (ctx: TelegrafContext, key: string) => {
-      ctx.session.selectedPlaylistId = key;
+      ctx.session.selectedPlaylistId = ctx.session.allPlaylists.find(
+        (p: Playlist) => formatTitle(p.snippet.title) === key
+      )?.id!;
       return true;
-    },
-    formatState: (ctx: TelegrafContext, _: string, selected: boolean, key: string) => {
-      const playlist = ctx.session.allPlaylists.find((p) => p.id === key);
-      const title = truncate(playlist!.snippet.title, {
-        length: 10,
-      });
-      return selectButtonTitle(title, selected);
     },
   }
 );
@@ -94,7 +96,8 @@ channelsMenu.select(
       const title = truncate(chat?.title!, {
         length: 10,
       });
-      return selectButtonTitle(title, selected);
+      const buttonTitle = selectButtonTitle(title, selected);
+      return buttonTitle;
     },
   }
 );
