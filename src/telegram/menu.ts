@@ -63,7 +63,7 @@ channelsMenu.select(
     isSet: async (ctx: TelegrafContext, key: string) => {
       const userId: number = ctx.from!.id;
       const playlistId: string = ctx.session.selectedPlaylistId;
-      const chatId = ctx.session.userChats.find((c) => c.title === key)?.id!;
+      const chatId = parseInt(key, 10);
       const existingSyncedPlaylist = await getSyncedPlaylist({
         userId,
         playlistId,
